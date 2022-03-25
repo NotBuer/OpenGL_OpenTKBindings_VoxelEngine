@@ -15,19 +15,8 @@ namespace OpenTKVoxelEngine_Shader
             int vertexShader;
             int fragmentShader;
 
-            // Read the vertex shader source code and store it in a string.
-            string vertexShaderSource;
-            using (StreamReader reader = new StreamReader(vertexPath, Encoding.UTF8))
-            {
-                vertexShaderSource = reader.ReadToEnd();
-            }
-
-            // Read the fragment shader source code and store it in a string.
-            string fragmentShaderSource;
-            using (StreamReader reader = new StreamReader(fragmentPath, Encoding.UTF8))
-            {
-                fragmentShaderSource = reader.ReadToEnd();
-            }
+            string vertexShaderSource = File.ReadAllText(vertexPath);
+            string fragmentShaderSource = File.ReadAllText(fragmentPath);
 
             // Create the vertex shader object and replace the source code in a shader object.
             vertexShader = GL.CreateShader(ShaderType.VertexShader);
@@ -38,22 +27,6 @@ namespace OpenTKVoxelEngine_Shader
             fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
             GL.ShaderSource(fragmentShader, fragmentShaderSource);
             CompileShader(fragmentShader);
-
-            //// Compile the vertex shader object.
-            //GL.CompileShader(vertexShader);
-            //string infoLogVert = GL.GetShaderInfoLog(vertexShader);
-            //if (infoLogVert != string.Empty)
-            //{
-            //    Console.WriteLine(infoLogVert);
-            //}
-
-            //// Compile the fragment shader object.
-            //GL.CompileShader(fragmentShader);
-            //string infoLogFrag = GL.GetShaderInfoLog(fragmentShader);
-            //if (infoLogFrag != string.Empty)
-            //{
-            //    Console.WriteLine(infoLogFrag);
-            //}
 
             // Then create the program object and set it.
             handle = GL.CreateProgram();

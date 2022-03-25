@@ -6,6 +6,7 @@ using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
 using OpenTKVoxelEngine_Shader;
+using OpenTKVoxelEngine_Utils;
 
 namespace OpenTKVoxelEngine_EngineWindow
 {
@@ -44,7 +45,7 @@ namespace OpenTKVoxelEngine_EngineWindow
             renderWireframe = false;
 
             // Clear the color buffers with the provided RGBA values.
-            GL.ClearColor(.2f, .3f, .3f, 1f);
+            GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
             // Bind the VBO.
             vertexBufferObject = GL.GenBuffer();
@@ -65,7 +66,7 @@ namespace OpenTKVoxelEngine_EngineWindow
             GL.EnableVertexAttribArray(0);
 
             // Construct and initialize the shaders.
-            shader = new Shader("shader.vert", "shader.frag");
+            shader = new Shader(Utility.GetRootDirectory("Shaders/shader.vert"), Utility.GetRootDirectory("Shaders/shader.frag"));
             shader.Use();
         }
 
