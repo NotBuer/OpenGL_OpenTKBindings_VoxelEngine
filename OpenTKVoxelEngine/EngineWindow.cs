@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -17,13 +18,15 @@ namespace OpenTKVoxelEngine_EngineWindow
         private int vertexBufferObject; // VBO
         private int vertexArrayObject; // VAO
         private int elementBufferObject; // EBO
+        private Stopwatch _timer;
 
         private readonly float[] vertices =
         {
-            0.5f,  0.5f, 0.0f, // top right
-            0.5f, -0.5f, 0.0f, // bottom right
-            -0.5f, -0.5f, 0.0f, // bottom left
-            -0.5f,  0.5f, 0.0f  // top left
+            // positions         // colors
+            0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f, // top right
+            0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f, // bottom right
+            -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, 1.0f, // bottom left
+            -0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 1.0f // top left
         };
 
         private readonly uint[] indices = // Starting from 0!
@@ -44,6 +47,9 @@ namespace OpenTKVoxelEngine_EngineWindow
 
             renderWireframe = false;
 
+            _timer = new Stopwatch();
+            _timer.Start();
+
             // Clear the color buffers with the provided RGBA values.
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
@@ -61,9 +67,13 @@ namespace OpenTKVoxelEngine_EngineWindow
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
             GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
-            // Link the vertex attribute.
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            // Link the vertex attribute (Positions).
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
             GL.EnableVertexAttribArray(0);
+
+            // Link the vertex attribute (Colors).
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+            GL.EnableVertexAttribArray(1);
 
             // Construct and initialize the shaders.
             shader = new Shader(Utility.GetRootDirectory("Shaders/shader.vert"), Utility.GetRootDirectory("Shaders/shader.frag"));
@@ -73,7 +83,27 @@ namespace OpenTKVoxelEngine_EngineWindow
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
-            DeliverFrame();
+
+            // Clears the image buffer.
+            GL.Clear(ClearBufferMask.ColorBufferBit);
+
+            // Bind the shader.
+            shader.Use();
+
+            if (renderWireframe)
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
+            else
+                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
+
+            // Bind the VAO.
+            GL.BindVertexArray(vertexArrayObject);
+
+            // Draw the VAO data, starting from the same index as the declared position in the Vertex Shader.
+            GL.DrawElements(PrimitiveType.Triangles, vertices.Length, DrawElementsType.UnsignedInt, 0);
+            //GL.DrawArrays(PrimitiveType.Triangles, shader.GetAttribLocation("aPosition"), 3);
+
+            // Swap buffers to present the rendered frame.
+            SwapBuffers();
         }
 
         protected override void OnUpdateFrame(FrameEventArgs args)
@@ -113,30 +143,6 @@ namespace OpenTKVoxelEngine_EngineWindow
             shader.Dispose();
 
             base.OnUnload();
-        }
-
-        private void DeliverFrame()
-        {
-            // Clears the image buffer.
-            GL.Clear(ClearBufferMask.ColorBufferBit);
-
-            // Bind the shader.
-            shader.Use();
-
-            // Bind the VAO.
-            GL.BindVertexArray(vertexArrayObject);
-
-            if (renderWireframe)
-                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
-            else
-                GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Fill);
-
-            // Draw the VAO data, starting from the same index as the declared position in the Vertex Shader.
-            GL.DrawElements(PrimitiveType.Triangles, vertices.Length, DrawElementsType.UnsignedInt, 0);
-            //GL.DrawArrays(PrimitiveType.Triangles, shader.GetAttribLocation("aPosition"), 3);
-
-            // Swap buffers to present the rendered frame.
-            SwapBuffers();
         }
 
     }

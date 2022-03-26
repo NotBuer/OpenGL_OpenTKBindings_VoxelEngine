@@ -10,6 +10,8 @@ namespace OpenTKVoxelEngine_Shader
         private bool disposedValue = false;
         private int handle;
 
+        public int Handle { get => handle; }
+
         public Shader(string vertexPath, string fragmentPath)
         {
             int vertexShader;
