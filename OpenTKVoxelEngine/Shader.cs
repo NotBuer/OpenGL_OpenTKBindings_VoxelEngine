@@ -83,6 +83,12 @@ namespace OpenTKVoxelEngine_Shader
             return GL.GetAttribLocation(handle, attribName);
         }
 
+        public void SetInt(string name, int value)
+        {
+            int location = GL.GetUniformLocation(handle, name);
+            GL.Uniform1(location, value);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
