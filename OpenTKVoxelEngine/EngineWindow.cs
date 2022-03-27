@@ -6,7 +6,6 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
-using OpenTKVoxelEngine_Core;
 using OpenTKVoxelEngine_Shader;
 using OpenTKVoxelEngine_Utils;
 using OpenTKVoxelEngine_Texture;
@@ -79,13 +78,6 @@ namespace OpenTKVoxelEngine_EngineWindow
             // Clockwise
             0, 1, 3, // first triangle
             1, 2, 3  // second triangle
-        };
-
-        private readonly float[] texCoord =
-        {
-            0.0f, 0.0f, // lower-left corner
-            1.0f, 0.0f, // lower-right corner
-            0.5f, 1.0f  // top-center corner
         };
 
         public EngineWindow(GameWindowSettings gameWindowSettings, NativeWindowSettings nativeWindowSettings)
