@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using OpenTK.Graphics.OpenGL;
+using OpenTK.Mathematics;
+
+using OpenTKVoxelEngine_Core;
 
 namespace OpenTKVoxelEngine_Shader
 {
@@ -9,6 +13,8 @@ namespace OpenTKVoxelEngine_Shader
     {
         private bool disposedValue = false;
         private int handle;
+
+        private readonly Dictionary<string, int> _uniformLocations;
 
         public int Handle { get => handle; }
 
@@ -41,6 +47,26 @@ namespace OpenTKVoxelEngine_Shader
             GL.DetachShader(handle, fragmentShader);
             GL.DeleteShader(fragmentShader);
             GL.DeleteShader(vertexShader);
+
+            // Cache all shader uniform locations.
+            // First, get the number of active uniforms in the shader.
+            GL.GetProgram(handle, GetProgramParameterName.ActiveUniforms, out int numberOfUniforms);
+
+            // Allocate, the dictionary to hold the locations.
+            _uniformLocations = new Dictionary<string, int>(numberOfUniforms);
+
+            for (int i = 0; i < numberOfUniforms; i++)
+            {
+                // Get the name of this uniform
+                string key = GL.GetActiveUniform(handle, i, out _, out _);
+
+                // Get the location
+                int location = GL.GetUniformLocation(handle, key);
+
+                // Then add to the dictionary.
+                _uniformLocations.Add(key, location);
+            }
+
         }
 
         private static void CompileShader(int shader)
@@ -87,6 +113,12 @@ namespace OpenTKVoxelEngine_Shader
         {
             int location = GL.GetUniformLocation(handle, name);
             GL.Uniform1(location, value);
+        }
+
+        public void SetMatrix4(string name, Matrix4 data)
+        {
+            GL.UseProgram(handle);
+            GL.UniformMatrix4(_uniformLocations[name], true, ref data);
         }
 
         protected virtual void Dispose(bool disposing)

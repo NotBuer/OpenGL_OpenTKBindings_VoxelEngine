@@ -13,8 +13,8 @@ namespace OpenTKVoxelEngine_Core
     public static class Core
     {
 
-        public const int WIDTH = 800;
-        public const int HEIGHT = 600;
+        public const int WIDTH = 1280;
+        public const int HEIGHT = 720;
 
         public static void Main()
         {
@@ -24,7 +24,8 @@ namespace OpenTKVoxelEngine_Core
             {
                 Size = new Vector2i(WIDTH, HEIGHT),
                 Title = "VoxelEngine",
-                VSync = VSyncMode.Adaptive
+                VSync = VSyncMode.Off,
+                
                 
             };
 

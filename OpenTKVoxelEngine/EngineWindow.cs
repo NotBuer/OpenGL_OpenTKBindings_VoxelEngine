@@ -6,9 +6,11 @@ using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 
+using OpenTKVoxelEngine_Core;
 using OpenTKVoxelEngine_Shader;
 using OpenTKVoxelEngine_Utils;
 using OpenTKVoxelEngine_Texture;
+using OpenTKVoxelEngine_Camera;
 
 namespace OpenTKVoxelEngine_EngineWindow
 {
@@ -18,17 +20,58 @@ namespace OpenTKVoxelEngine_EngineWindow
         private Shader shader; // Shader
         private Texture texture1; // Texture 1
         private Texture texture2; // Texture 2
+        private Camera camera; // Camera
         private int vertexBufferObject; // VBO
         private int vertexArrayObject; // VAO
         private int elementBufferObject; // EBO
+        private Stopwatch timer;
+        private Vector2 lastPos;
+        private bool firstMove;
 
         private readonly float[] vertices =
         {
-            // positions         // texture coords
-            0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
-            0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
-            -0.5f, -0.5f, 0.0f,  0.0f, 0.0f, // bottom left
-            -0.5f,  0.5f, 0.0f,  0.0f, 1.0f  // top left
+            // positions          // texture coords
+             -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+              0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+              0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+              0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+             -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+             -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+             -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+              0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+              0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+              0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+             -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+             -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+             -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+             -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+             -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+             -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+             -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+             -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+              0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+              0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+              0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+              0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+              0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+              0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+             -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+              0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+              0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+              0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+             -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+             -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+             -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+              0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+              0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+              0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+             -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+             -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
         };
 
         private readonly uint[] indices = // Starting from 0!
@@ -55,6 +98,9 @@ namespace OpenTKVoxelEngine_EngineWindow
             Console.WriteLine($"Graphics API: '{API}' / Version: '{APIVersion}'");
 
             renderWireframe = false;
+            timer = new Stopwatch();
+            timer.Start();
+            firstMove = true;
 
             // Clear the color buffers with the provided RGBA values.
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -92,16 +138,28 @@ namespace OpenTKVoxelEngine_EngineWindow
             texture1 = Texture.LoadFromFile(Utility.GetRootDirectory("wallTexture.jpg"));
             texture1.Use(OpenTK.Graphics.OpenGL4.TextureUnit.Texture0);
 
+            // Create the second texture and use it.
             texture2 = Texture.LoadFromFile(Utility.GetRootDirectory("awesomeface.png"));
             texture2.Use(OpenTK.Graphics.OpenGL4.TextureUnit.Texture1);
+
+            // Now initialize the camera, so that it is 3 units back from where the rectangle is.
+            // Also give it a proper aspect ratio.
+            camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
+
+            // Confine the cursor inside the window.
+            CursorGrabbed = true;
         }
 
         protected override void OnRenderFrame(FrameEventArgs args)
         {
             base.OnRenderFrame(args);
 
+            // Enable the Z-Buffer depth test.
+            GL.Enable(EnableCap.DepthTest);
+
             // Clears the image buffer.
             GL.Clear(ClearBufferMask.ColorBufferBit);
+            GL.Clear(ClearBufferMask.DepthBufferBit);
 
             // Bind the VAO.
             GL.BindVertexArray(vertexArrayObject);
@@ -113,8 +171,17 @@ namespace OpenTKVoxelEngine_EngineWindow
             // Bind the shader.
             shader.Use();
 
+            // Set the model matrix.
+            Matrix4 model = Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(timer.ElapsedMilliseconds / 10f));
+
+            // And set the uniform matrices to the vertex shader, by using the camera view and projection matrix.
+            shader.SetMatrix4("model", model);
+            shader.SetMatrix4("view", camera.GetViewMatrix());
+            shader.SetMatrix4("projection", camera.GetProjectionMatrix());
+
             // Draw the VAO data, starting from the same index as the declared position in the Vertex Shader.
-            GL.DrawElements(PrimitiveType.Triangles, vertices.Length, DrawElementsType.UnsignedInt, 0);
+            //GL.DrawElements(PrimitiveType.Triangles, vertices.Length, DrawElementsType.UnsignedInt, 0);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
 
             // Handle whether to render in wireframe view or not.
             if (renderWireframe) GL.PolygonMode(MaterialFace.FrontAndBack, PolygonMode.Line);
@@ -131,14 +198,86 @@ namespace OpenTKVoxelEngine_EngineWindow
             if (KeyboardState.IsKeyDown(Keys.F1)) renderWireframe = true;
             else renderWireframe = false;
 
-            if (KeyboardState.IsKeyDown(Keys.Escape))
-                Close();
+            //if (KeyboardState.IsKeyDown(Keys.Escape))
+            //    Close();
+
+            // Skip executing if the application is not focused.
+            if (!IsFocused) { return; }
+
+            KeyboardState input = KeyboardState.GetSnapshot();
+
+            // Change the camera speed if key pressed during frame.
+            if (input.IsKeyDown(Keys.LeftShift)) camera._cameraSpeed = 2 * Camera.CAMERA_DEFAULT_SPEED;
+            else camera._cameraSpeed = Camera.CAMERA_DEFAULT_SPEED;
+            
+            if (input.IsKeyDown(Keys.W))
+            {
+                camera.Position += camera.Forward * camera._cameraSpeed * (float)args.Time; //Forward
+            }
+
+            if (input.IsKeyDown(Keys.S))
+            {
+                camera.Position -= camera.Forward * camera._cameraSpeed * (float)args.Time; //Backwards
+            }
+
+            if (input.IsKeyDown(Keys.A))
+            {
+                camera.Position -= Vector3.Normalize(Vector3.Cross(camera.Forward, camera.Up)) * camera._cameraSpeed * (float)args.Time; //Left
+            }
+
+            if (input.IsKeyDown(Keys.D))
+            {
+                camera.Position += Vector3.Normalize(Vector3.Cross(camera.Forward, camera.Up)) * camera._cameraSpeed * (float)args.Time; //Right
+            }
+
+            if (input.IsKeyDown(Keys.Space))
+            {
+                camera.Position += camera.Up * camera._cameraSpeed * (float)args.Time; //Up
+            }
+
+            if (input.IsKeyDown(Keys.LeftControl))
+            {
+                camera.Position -= camera.Up * camera._cameraSpeed * (float)args.Time; //Down
+            }
+
+            // Get the mouse state.
+            MouseState mouse = MouseState;
+
+            if (firstMove)
+            {
+                lastPos = new Vector2(mouse.X, mouse.Y);
+                firstMove = false;
+            }
+            else
+            {
+                // Calculate the offset of the mouse position.
+                float deltaX = mouse.X - lastPos.X;
+                float deltaY = mouse.Y - lastPos.Y;
+                lastPos = new Vector2(mouse.X, mouse.Y);
+
+                // Apply the camera pitch and yaw (pitch clamped in the camera class)
+                camera.Yaw += deltaX * camera._sensitivity;
+                camera.Pitch -= deltaY * camera._sensitivity; // reversed since y-coordinates range from bottom to top.
+            }
+
         }
 
         protected override void OnResize(ResizeEventArgs e)
         {
             base.OnResize(e);
             GL.Viewport(0, 0, e.Width, e.Height);
+
+            if (camera != null)
+            {
+                // Need to update the aspect ratio once the window has been resized.
+                camera.AspectRatio = Size.X / (float)Size.Y;
+            }
+        }
+
+        protected override void OnMouseWheel(MouseWheelEventArgs e)
+        {
+            base.OnMouseWheel(e);
+            camera.Fov -= e.OffsetY;
         }
 
         protected override void OnUnload()
