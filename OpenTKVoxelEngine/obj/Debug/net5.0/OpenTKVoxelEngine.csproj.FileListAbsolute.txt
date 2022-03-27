@@ -1,0 +1,5 @@
+C:\Users\rodri\Documents\_VoxelEngine\OpenGL_OpenTKBindings_VoxelEngine\OpenTKVoxelEngine\obj\Debug\net5.0\OpenTKVoxelEngine.csproj.AssemblyReference.cache
+C:\Users\rodri\Documents\_VoxelEngine\OpenGL_OpenTKBindings_VoxelEngine\OpenTKVoxelEngine\obj\Debug\net5.0\OpenTKVoxelEngine.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\rodri\Documents\_VoxelEngine\OpenGL_OpenTKBindings_VoxelEngine\OpenTKVoxelEngine\obj\Debug\net5.0\OpenTKVoxelEngine.AssemblyInfoInputs.cache
+C:\Users\rodri\Documents\_VoxelEngine\OpenGL_OpenTKBindings_VoxelEngine\OpenTKVoxelEngine\obj\Debug\net5.0\OpenTKVoxelEngine.AssemblyInfo.cs
+C:\Users\rodri\Documents\_VoxelEngine\OpenGL_OpenTKBindings_VoxelEngine\OpenTKVoxelEngine\obj\Debug\net5.0\OpenTKVoxelEngine.csproj.CoreCompileInputs.cache
