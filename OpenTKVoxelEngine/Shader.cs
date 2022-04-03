@@ -6,6 +6,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK.Mathematics;
 
 using OpenTKVoxelEngine_Core;
+using OpenTKVoxelEngine_Utils;
 
 namespace OpenTKVoxelEngine_Shader
 {
@@ -119,6 +120,12 @@ namespace OpenTKVoxelEngine_Shader
         {
             GL.UseProgram(handle);
             GL.UniformMatrix4(_uniformLocations[name], true, ref data);
+        }
+
+        public void SetVector3(string name, Vector3 data)
+        {
+            GL.UseProgram(handle);
+            GL.Uniform3(_uniformLocations[name], data);
         }
 
         protected virtual void Dispose(bool disposing)

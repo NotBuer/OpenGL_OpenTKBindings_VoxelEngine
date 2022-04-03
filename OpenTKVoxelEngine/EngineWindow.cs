@@ -16,61 +16,63 @@ namespace OpenTKVoxelEngine_EngineWindow
     public class EngineWindow : GameWindow
     {
         private bool renderWireframe;
-        private Shader shader; // Shader
-        private Texture texture1; // Texture 1
-        private Texture texture2; // Texture 2
         private Camera camera; // Camera
-        private int vertexBufferObject; // VBO
-        private int vertexArrayObject; // VAO
         private int elementBufferObject; // EBO
         private Stopwatch timer;
         private Vector2 lastPos;
         private bool firstMove;
 
+        private readonly Vector3 _lightPos = new Vector3(1.2f, 1.0f, 2.0f);
+        private int _vertexBufferObject;
+        private int _vaoModel;
+        private int _vaoLamp;
+        private Shader _lampShader;
+        private Shader _lightingShader;
+
         private readonly float[] vertices =
         {
-            // positions          // texture coords
-             -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-              0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-              0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-              0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-             -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-             -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+            // positions
+            -0.5f, -0.5f, -0.5f, // Front face
+             0.5f, -0.5f, -0.5f, 
+             0.5f,  0.5f, -0.5f, 
+             0.5f,  0.5f, -0.5f, 
+            -0.5f,  0.5f, -0.5f, 
+            -0.5f, -0.5f, -0.5f, 
 
-             -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-              0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-              0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-              0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-             -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-             -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f, // Back face
+             0.5f, -0.5f,  0.5f, 
+             0.5f,  0.5f,  0.5f, 
+             0.5f,  0.5f,  0.5f, 
+            -0.5f,  0.5f,  0.5f, 
+            -0.5f, -0.5f,  0.5f, 
 
-             -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-             -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-             -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-             -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-             -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-             -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f, // Left face
+            -0.5f,  0.5f, -0.5f, 
+            -0.5f, -0.5f, -0.5f, 
+            -0.5f, -0.5f, -0.5f, 
+            -0.5f, -0.5f,  0.5f, 
+            -0.5f,  0.5f,  0.5f, 
 
-              0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-              0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-              0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-              0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-              0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-              0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f, // Right face
+             0.5f,  0.5f, -0.5f, 
+             0.5f, -0.5f, -0.5f, 
+             0.5f, -0.5f, -0.5f, 
+             0.5f, -0.5f,  0.5f, 
+             0.5f,  0.5f,  0.5f, 
 
-             -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-              0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-              0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-              0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-             -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-             -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, // Bottom face
+             0.5f, -0.5f, -0.5f, 
+             0.5f, -0.5f,  0.5f, 
+             0.5f, -0.5f,  0.5f, 
+            -0.5f, -0.5f,  0.5f, 
+            -0.5f, -0.5f, -0.5f, 
 
-             -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-              0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-              0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-              0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-             -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-             -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+            -0.5f,  0.5f, -0.5f, // Top face
+             0.5f,  0.5f, -0.5f, 
+             0.5f,  0.5f,  0.5f, 
+             0.5f,  0.5f,  0.5f, 
+            -0.5f,  0.5f,  0.5f, 
+            -0.5f,  0.5f, -0.5f, 
         };
 
         private readonly uint[] indices = // Starting from 0!
@@ -97,42 +99,42 @@ namespace OpenTKVoxelEngine_EngineWindow
             // Clear the color buffers with the provided RGBA values.
             GL.ClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
+            // Enable the Z-Buffer depth test.
+            GL.Enable(EnableCap.DepthTest);
+
             // Bind the VBO.
-            vertexBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBufferObject);
+            _vertexBufferObject = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
             GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
 
-            // Bind the VAO.
-            vertexArrayObject = GL.GenVertexArray();
-            GL.BindVertexArray(vertexArrayObject);
+            _lightingShader = new Shader(Utility.GetRootDirectory("Shaders/shader.vert"), 
+                Utility.GetRootDirectory("Shaders/lighting.frag"));
+            _lampShader = new Shader(Utility.GetRootDirectory("Shaders/shader.vert"), 
+                Utility.GetRootDirectory("Shaders/shader.frag"));
 
-            // Bind EBO
-            elementBufferObject = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
-            // Construct and initialize the shaders.
-            shader = new Shader(Utility.GetRootDirectory("Shaders/shader.vert"), Utility.GetRootDirectory("Shaders/shader.frag"));
-            shader.Use();
-            shader.SetInt("texture1", 0);
-            shader.SetInt("texture2", 1);
+            {
+                // Initialize the VAO for the model.
+                _vaoModel = GL.GenVertexArray();
+                GL.BindVertexArray(_vaoModel);
+                int vertexLocationModel = _lightingShader.GetAttribLocation("aPosition");
+                GL.EnableVertexAttribArray(vertexLocationModel);
+                GL.VertexAttribPointer(vertexLocationModel, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            }
 
-            // Link the vertex attribute (Positions).
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 5 * sizeof(float), 0);
-            GL.EnableVertexAttribArray(0);
-
-            // Link the vertex attribute (Texture Coords).
-            int texCoordLocation = shader.GetAttribLocation("aTexCoord");
-            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
-            GL.EnableVertexAttribArray(texCoordLocation);
-
-            // Create the first texture and use it.
-            texture1 = Texture.LoadFromFile(Utility.GetRootDirectory("Resources/Textures/wallTexture.jpg"));
-            texture1.Use(OpenTK.Graphics.OpenGL4.TextureUnit.Texture0);
-
-            // Create the second texture and use it.
-            texture2 = Texture.LoadFromFile(Utility.GetRootDirectory("Resources/Textures/awesomeface.png"));
-            texture2.Use(OpenTK.Graphics.OpenGL4.TextureUnit.Texture1);
+            {
+                // Initialize the VAO for the lamp.
+                _vaoLamp = GL.GenVertexArray();
+                GL.BindVertexArray(_vaoLamp);
+                int vertexLocationLamp = _lampShader.GetAttribLocation("aPosition");
+                GL.EnableVertexAttribArray(vertexLocationLamp);
+                GL.VertexAttribPointer(vertexLocationLamp, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            }
+            
+            //// Bind EBO
+            //elementBufferObject = GL.GenBuffer();
+            //GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
+            //GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
             // Now initialize the camera, so that it is 3 units back from where the rectangle is.
             // Also give it a proper aspect ratio.
@@ -146,33 +148,34 @@ namespace OpenTKVoxelEngine_EngineWindow
         {
             base.OnRenderFrame(args);
 
-            // Enable the Z-Buffer depth test.
-            GL.Enable(EnableCap.DepthTest);
-
             // Clears the image buffer.
-            GL.Clear(ClearBufferMask.ColorBufferBit);
-            GL.Clear(ClearBufferMask.DepthBufferBit);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            // Bind the VAO.
-            GL.BindVertexArray(vertexArrayObject);
+            // Draw the model.
+            GL.BindVertexArray(_vaoModel);
+            _lightingShader.Use();
 
-            // Call the textures to use them.
-            texture1.Use(OpenTK.Graphics.OpenGL4.TextureUnit.Texture0);
-            texture2.Use(OpenTK.Graphics.OpenGL4.TextureUnit.Texture1);
+            // Matrix4.Identity is used as the matrix, since we just want to draw it at (0,0,0).
+            _lightingShader.SetMatrix4("model", Matrix4.Identity);
+            _lightingShader.SetMatrix4("view", camera.GetViewMatrix());
+            _lightingShader.SetMatrix4("projection", camera.GetProjectionMatrix());
 
-            // Bind the shader.
-            shader.Use();
+            _lightingShader.SetVector3("objectColor", new Vector3(1f, 0.5f, 0.31f));
+            _lightingShader.SetVector3("lightColor", new Vector3(1f, 1f, 1f));
 
-            // Set the model matrix.
-            Matrix4 model = Matrix4.CreateRotationX((float)MathHelper.DegreesToRadians(timer.ElapsedMilliseconds / 10f));
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
 
-            // And set the uniform matrices to the vertex shader, by using the camera view and projection matrix.
-            shader.SetMatrix4("model", model);
-            shader.SetMatrix4("view", camera.GetViewMatrix());
-            shader.SetMatrix4("projection", camera.GetProjectionMatrix());
 
-            // Draw the VAO data, starting from the same index as the declared position in the Vertex Shader.
-            //GL.DrawElements(PrimitiveType.Triangles, vertices.Length, DrawElementsType.UnsignedInt, 0);
+            // Draw the lamp, this is mostly the same as for the model cube.
+            GL.BindVertexArray(_vaoLamp);
+            _lampShader.Use();
+
+            Matrix4 lampMatrix = Matrix4.CreateScale(0.2f);
+            lampMatrix *= Matrix4.CreateTranslation(_lightPos);
+
+            _lampShader.SetMatrix4("model", lampMatrix);
+            _lampShader.SetMatrix4("view", camera.GetViewMatrix());
+            _lampShader.SetMatrix4("projection", camera.GetProjectionMatrix());
             GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
 
             // Handle whether to render in wireframe view or not.
@@ -278,16 +281,18 @@ namespace OpenTKVoxelEngine_EngineWindow
 
             // Binding a buffer to 0 basically sets it to null, so any calls that modify a buffer without binding one first will result in a crash.
             GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-            GL.DeleteBuffer(vertexBufferObject);
+            GL.DeleteBuffer(_vertexBufferObject);
             GL.UseProgram(0);
 
             // Delete all the resources
-            GL.DeleteBuffer(vertexBufferObject);
-            GL.DeleteBuffer(vertexArrayObject);
+            GL.DeleteBuffer(_vertexBufferObject);
+            GL.DeleteBuffer(_vaoModel);
+            GL.DeleteBuffer(_vaoLamp);
             GL.DeleteBuffer(elementBufferObject);
 
             // Cleanup the shaders
-            shader.Dispose();
+            _lampShader.Dispose();
+            _lightingShader.Dispose();
 
             base.OnUnload();
         }
