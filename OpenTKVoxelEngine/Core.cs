@@ -19,18 +19,23 @@ namespace OpenTKVoxelEngine_Core
         public static void Main()
         {
 
-            // Create a new instance of engine window and set it.
-            EngineWindow engineWindow = new EngineWindow(GameWindowSettings.Default, NativeWindowSettings.Default)
+            // Create the NativeWindowSettings instance and initialize the parameters
+            NativeWindowSettings nativeWindowSettings = new NativeWindowSettings()
             {
                 Size = new Vector2i(WIDTH, HEIGHT),
                 Title = "VoxelEngine",
-                VSync = VSyncMode.Off,
-                
-                
+                Flags = ContextFlags.ForwardCompatible,
             };
 
-            // Initialize the engine window.
-            engineWindow.Run();
+            // Create a EngineWindow instance to handle our window, but create it inside an using statement,
+            // this allow us to run the code once at the very begining, and later on after the setup, everythig is cleared
+            // in the memory, avoiding any possible memory leaks.
+            using (EngineWindow window = new EngineWindow(GameWindowSettings.Default, nativeWindowSettings))
+            {
+                window.Size = new Vector2i(WIDTH, HEIGHT);
+                window.VSync = VSyncMode.Off;
+                window.Run();
+            }
 
         }
 

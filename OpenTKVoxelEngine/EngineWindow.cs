@@ -123,15 +123,15 @@ namespace OpenTKVoxelEngine_EngineWindow
 
             // Link the vertex attribute (Texture Coords).
             int texCoordLocation = shader.GetAttribLocation("aTexCoord");
-            GL.EnableVertexAttribArray(texCoordLocation);
             GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 5 * sizeof(float), 3 * sizeof(float));
+            GL.EnableVertexAttribArray(texCoordLocation);
 
             // Create the first texture and use it.
-            texture1 = Texture.LoadFromFile(Utility.GetRootDirectory("wallTexture.jpg"));
+            texture1 = Texture.LoadFromFile(Utility.GetRootDirectory("Resources/Textures/wallTexture.jpg"));
             texture1.Use(OpenTK.Graphics.OpenGL4.TextureUnit.Texture0);
 
             // Create the second texture and use it.
-            texture2 = Texture.LoadFromFile(Utility.GetRootDirectory("awesomeface.png"));
+            texture2 = Texture.LoadFromFile(Utility.GetRootDirectory("Resources/Textures/awesomeface.png"));
             texture2.Use(OpenTK.Graphics.OpenGL4.TextureUnit.Texture1);
 
             // Now initialize the camera, so that it is 3 units back from where the rectangle is.
