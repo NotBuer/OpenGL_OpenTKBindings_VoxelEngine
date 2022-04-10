@@ -17,7 +17,6 @@ namespace OpenTKVoxelEngine_EngineWindow
     {
         private bool renderWireframe;
         private Camera camera; // Camera
-        private int elementBufferObject; // EBO
         private Stopwatch timer;
         private Vector2 lastPos;
         private bool firstMove;
@@ -31,48 +30,48 @@ namespace OpenTKVoxelEngine_EngineWindow
 
         private readonly float[] vertices =
         {
-            // positions
-            -0.5f, -0.5f, -0.5f, // Front face
-             0.5f, -0.5f, -0.5f, 
-             0.5f,  0.5f, -0.5f, 
-             0.5f,  0.5f, -0.5f, 
-            -0.5f,  0.5f, -0.5f, 
-            -0.5f, -0.5f, -0.5f, 
+            // Position          Normal
+            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // Front face
+             0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-            -0.5f, -0.5f,  0.5f, // Back face
-             0.5f, -0.5f,  0.5f, 
-             0.5f,  0.5f,  0.5f, 
-             0.5f,  0.5f,  0.5f, 
-            -0.5f,  0.5f,  0.5f, 
-            -0.5f, -0.5f,  0.5f, 
+            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // Back face
+             0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+             0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+             0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
 
-            -0.5f,  0.5f,  0.5f, // Left face
-            -0.5f,  0.5f, -0.5f, 
-            -0.5f, -0.5f, -0.5f, 
-            -0.5f, -0.5f, -0.5f, 
-            -0.5f, -0.5f,  0.5f, 
-            -0.5f,  0.5f,  0.5f, 
+            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, // Left face
+            -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+            -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-             0.5f,  0.5f,  0.5f, // Right face
-             0.5f,  0.5f, -0.5f, 
-             0.5f, -0.5f, -0.5f, 
-             0.5f, -0.5f, -0.5f, 
-             0.5f, -0.5f,  0.5f, 
-             0.5f,  0.5f,  0.5f, 
+             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, // Right face
+             0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+             0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+             0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+             0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-            -0.5f, -0.5f, -0.5f, // Bottom face
-             0.5f, -0.5f, -0.5f, 
-             0.5f, -0.5f,  0.5f, 
-             0.5f, -0.5f,  0.5f, 
-            -0.5f, -0.5f,  0.5f, 
-            -0.5f, -0.5f, -0.5f, 
+            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, // Bottom face
+             0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-            -0.5f,  0.5f, -0.5f, // Top face
-             0.5f,  0.5f, -0.5f, 
-             0.5f,  0.5f,  0.5f, 
-             0.5f,  0.5f,  0.5f, 
-            -0.5f,  0.5f,  0.5f, 
-            -0.5f,  0.5f, -0.5f, 
+            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, // Top face
+             0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+             0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+             0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
         };
 
         private readonly uint[] indices = // Starting from 0!
@@ -112,30 +111,25 @@ namespace OpenTKVoxelEngine_EngineWindow
             _lampShader = new Shader(Utility.GetRootDirectory("Shaders/shader.vert"), 
                 Utility.GetRootDirectory("Shaders/shader.frag"));
 
-
-            {
-                // Initialize the VAO for the model.
-                _vaoModel = GL.GenVertexArray();
-                GL.BindVertexArray(_vaoModel);
-                int vertexLocationModel = _lightingShader.GetAttribLocation("aPosition");
-                GL.EnableVertexAttribArray(vertexLocationModel);
-                GL.VertexAttribPointer(vertexLocationModel, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-            }
-
-            {
-                // Initialize the VAO for the lamp.
-                _vaoLamp = GL.GenVertexArray();
-                GL.BindVertexArray(_vaoLamp);
-                int vertexLocationLamp = _lampShader.GetAttribLocation("aPosition");
-                GL.EnableVertexAttribArray(vertexLocationLamp);
-                GL.VertexAttribPointer(vertexLocationLamp, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-            }
+            // Initialize the VAO for the model.
+            _vaoModel = GL.GenVertexArray();
+            GL.BindVertexArray(_vaoModel);
             
-            //// Bind EBO
-            //elementBufferObject = GL.GenBuffer();
-            //GL.BindBuffer(BufferTarget.ElementArrayBuffer, elementBufferObject);
-            //GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
+            int vertexLocationModel = _lightingShader.GetAttribLocation("aPosition");
+            GL.EnableVertexAttribArray(vertexLocationModel);
+            GL.VertexAttribPointer(vertexLocationModel, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
 
+            int normalLocation = _lightingShader.GetAttribLocation("aNormal");
+            GL.EnableVertexAttribArray(normalLocation);
+            GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+
+            // Initialize the VAO for the lamp.
+            _vaoLamp = GL.GenVertexArray();
+            GL.BindVertexArray(_vaoLamp);
+            int vertexLocationLamp = _lampShader.GetAttribLocation("aPosition");
+            GL.EnableVertexAttribArray(vertexLocationLamp);
+            GL.VertexAttribPointer(vertexLocationLamp, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
+            
             // Now initialize the camera, so that it is 3 units back from where the rectangle is.
             // Also give it a proper aspect ratio.
             camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
@@ -162,12 +156,13 @@ namespace OpenTKVoxelEngine_EngineWindow
 
             _lightingShader.SetVector3("objectColor", new Vector3(1f, 0.5f, 0.31f));
             _lightingShader.SetVector3("lightColor", new Vector3(1f, 1f, 1f));
+            _lightingShader.SetVector3("lightPos", _lightPos);
+            _lightingShader.SetVector3("viewPos", camera.Position);
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
 
-
             // Draw the lamp, this is mostly the same as for the model cube.
-            GL.BindVertexArray(_vaoLamp);
+            GL.BindVertexArray(_vaoModel);
             _lampShader.Use();
 
             Matrix4 lampMatrix = Matrix4.CreateScale(0.2f);
@@ -288,7 +283,6 @@ namespace OpenTKVoxelEngine_EngineWindow
             GL.DeleteBuffer(_vertexBufferObject);
             GL.DeleteBuffer(_vaoModel);
             GL.DeleteBuffer(_vaoLamp);
-            GL.DeleteBuffer(elementBufferObject);
 
             // Cleanup the shaders
             _lampShader.Dispose();
