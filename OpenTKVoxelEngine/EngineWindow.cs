@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
-using OpenTK.Graphics.OpenGL;
+//using OpenTK.Graphics.OpenGL;
+using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
@@ -27,51 +28,53 @@ namespace OpenTKVoxelEngine_EngineWindow
         private int _vaoLamp;
         private Shader _lampShader;
         private Shader _lightingShader;
+        private Texture _diffuseMap;
+        private Texture _specularMap;
 
-        private readonly float[] vertices =
-        {
-            // Position          Normal
-            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f, // Front face
-             0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+        private readonly float[] _vertices =
+ {
+            // Positions          Normals              Texture coords
+            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+             0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
 
-            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f, // Back face
-             0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-             0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-             0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
+             0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
+             0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f, 1.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f, 0.0f,
 
-            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f, // Left face
-            -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-            -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+            -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f, // Right face
-             0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-             0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-             0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-             0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+             0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+             0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f, // Bottom face
-             0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-            -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+             0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+            -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
 
-            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f, // Top face
-             0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-             0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-             0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-            -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+             0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+             0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+             0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+            -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f
         };
 
         private readonly uint[] indices = // Starting from 0!
@@ -104,7 +107,7 @@ namespace OpenTKVoxelEngine_EngineWindow
             // Bind the VBO.
             _vertexBufferObject = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vertexBufferObject);
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
+            GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Length * sizeof(float), _vertices, BufferUsageHint.StaticDraw);
 
             _lightingShader = new Shader(Utility.GetRootDirectory("Shaders/shader.vert"), 
                 Utility.GetRootDirectory("Shaders/lighting.frag"));
@@ -117,11 +120,15 @@ namespace OpenTKVoxelEngine_EngineWindow
             
             int vertexLocationModel = _lightingShader.GetAttribLocation("aPosition");
             GL.EnableVertexAttribArray(vertexLocationModel);
-            GL.VertexAttribPointer(vertexLocationModel, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 0);
+            GL.VertexAttribPointer(vertexLocationModel, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 0);
 
             int normalLocation = _lightingShader.GetAttribLocation("aNormal");
             GL.EnableVertexAttribArray(normalLocation);
-            GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.Float, false, 6 * sizeof(float), 3 * sizeof(float));
+            GL.VertexAttribPointer(normalLocation, 3, VertexAttribPointerType.Float, false, 8 * sizeof(float), 3 * sizeof(float));
+
+            int texCoordLocation = _lightingShader.GetAttribLocation("aTexCoords");
+            GL.EnableVertexAttribArray(texCoordLocation);
+            GL.VertexAttribPointer(texCoordLocation, 2, VertexAttribPointerType.Float, false, 8 * sizeof(float), 6 * sizeof(float));
 
             // Initialize the VAO for the lamp.
             _vaoLamp = GL.GenVertexArray();
@@ -129,7 +136,11 @@ namespace OpenTKVoxelEngine_EngineWindow
             int vertexLocationLamp = _lampShader.GetAttribLocation("aPosition");
             GL.EnableVertexAttribArray(vertexLocationLamp);
             GL.VertexAttribPointer(vertexLocationLamp, 3, VertexAttribPointerType.Float, false, 3 * sizeof(float), 0);
-            
+
+            // Our two textures are loaded in from memory, you should head over and check them out and compare them to the results.
+            _diffuseMap = Texture.LoadFromFile(Utility.GetRootDirectory("Resources/Textures/container2.png"));
+            _specularMap = Texture.LoadFromFile(Utility.GetRootDirectory("Resources/Textures/container2_specular.png"));
+
             // Now initialize the camera, so that it is 3 units back from where the rectangle is.
             // Also give it a proper aspect ratio.
             camera = new Camera(Vector3.UnitZ * 3, Size.X / (float)Size.Y);
@@ -147,17 +158,36 @@ namespace OpenTKVoxelEngine_EngineWindow
 
             // Draw the model.
             GL.BindVertexArray(_vaoModel);
+
+            // The two textures need to be used, in this case we use the diffuse map as our 0th texture
+            // and the specular map as our 1st texture.
+            _diffuseMap.Use(TextureUnit.Texture0);
+            _specularMap.Use(TextureUnit.Texture1);
             _lightingShader.Use();
 
             // Matrix4.Identity is used as the matrix, since we just want to draw it at (0,0,0).
             _lightingShader.SetMatrix4("model", Matrix4.Identity);
             _lightingShader.SetMatrix4("view", camera.GetViewMatrix());
             _lightingShader.SetMatrix4("projection", camera.GetProjectionMatrix());
-
-            _lightingShader.SetVector3("objectColor", new Vector3(1f, 0.5f, 0.31f));
-            _lightingShader.SetVector3("lightColor", new Vector3(1f, 1f, 1f));
-            _lightingShader.SetVector3("lightPos", _lightPos);
             _lightingShader.SetVector3("viewPos", camera.Position);
+
+            // Set the material values of the cube.
+            _lightingShader.SetInt("material.diffuse", 0);
+            _lightingShader.SetInt("material.specular", 1);
+            _lightingShader.SetFloat("material.shininess", 32.0f);
+
+            //Vector3 lightColor;
+            //float time = DateTime.Now.Second + DateTime.Now.Millisecond / 1000.0f;
+            //lightColor.X = (MathF.Sin(time * 2.0f) + 1) / 2f;
+            //lightColor.Y = (MathF.Sin(time * 0.7f) + 1) / 2f;
+            //lightColor.Z = (MathF.Sin(time * 1.3f) + 1) / 2f;
+
+            // Set the light values.
+            // The ambient light is less intensive than the diffuse light in order to make it less dominant.
+            _lightingShader.SetVector3("light.position", _lightPos);
+            _lightingShader.SetVector3("light.ambient", new Vector3(0.25f));
+            _lightingShader.SetVector3("light.diffuse", new Vector3(0.5f));
+            _lightingShader.SetVector3("light.specular", new Vector3(1.0f));
 
             GL.DrawArrays(PrimitiveType.Triangles, 0, 36);
 

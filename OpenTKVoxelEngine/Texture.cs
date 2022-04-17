@@ -18,7 +18,7 @@ namespace OpenTKVoxelEngine_Texture
             Handle = glHandle;
         }
 
-        public void Use(TextureUnit unit = TextureUnit.Texture0)
+        public void Use(TextureUnit unit)
         {
             // Activate the texture unit first before binding texture.
             GL.ActiveTexture(unit);

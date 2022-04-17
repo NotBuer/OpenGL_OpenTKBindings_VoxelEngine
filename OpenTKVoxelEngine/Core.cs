@@ -13,8 +13,8 @@ namespace OpenTKVoxelEngine_Core
     public static class Core
     {
 
-        public const int WIDTH = 1280;
-        public const int HEIGHT = 720;
+        public const int WIDTH = 1920;
+        public const int HEIGHT = 1080;
 
         public static void Main()
         {
@@ -25,6 +25,7 @@ namespace OpenTKVoxelEngine_Core
                 Size = new Vector2i(WIDTH, HEIGHT),
                 Title = "VoxelEngine",
                 Flags = ContextFlags.ForwardCompatible,
+                //Location = new Vector2i(WIDTH / 2, HEIGHT / 2),
             };
 
             // Create a EngineWindow instance to handle our window, but create it inside an using statement,
@@ -32,7 +33,6 @@ namespace OpenTKVoxelEngine_Core
             // in the memory, avoiding any possible memory leaks.
             using (EngineWindow window = new EngineWindow(GameWindowSettings.Default, nativeWindowSettings))
             {
-                window.Size = new Vector2i(WIDTH, HEIGHT);
                 window.VSync = VSyncMode.Off;
                 window.Run();
             }

@@ -128,6 +128,12 @@ namespace OpenTKVoxelEngine_Shader
             GL.Uniform3(_uniformLocations[name], data);
         }
 
+        public void SetFloat(string name, float value)
+        {
+            GL.UseProgram(handle);
+            GL.Uniform1(_uniformLocations[name], value);
+        }
+
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
